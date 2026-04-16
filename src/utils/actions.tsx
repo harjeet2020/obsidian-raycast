@@ -3,10 +3,12 @@ import {
   ActionPanel,
   Color,
   confirmAlert,
+  Form,
   getDefaultApplication,
   getPreferenceValues,
   Icon,
   List,
+  useNavigation,
 } from "@raycast/api";
 import React, { useEffect, useState } from "react";
 import fs from "fs";
@@ -19,7 +21,7 @@ import { updateNoteInCache, deleteNoteFromCache } from "../api/cache/cache.servi
 import { Logger } from "../api/logger/logger.service";
 import { Note, NoteWithContent, Obsidian, ObsidianTargetType, ObsidianVault, Vault } from "@/obsidian";
 import { getCodeBlocks } from "./utils";
-import { useVaultPluginCheck } from "./hooks";
+import { useVaultPluginCheck, useVaultNicknames } from "./hooks";
 import { appendSelectedTextTo } from "@/api/append-note";
 
 const logger = new Logger("Actions");
@@ -304,6 +306,82 @@ export function CopyVaultPathAction(props: { vault: ObsidianVault }) {
       title="Copy File Path"
       content={vault.path}
       shortcut={{ modifiers: ["opt", "shift"], key: "c" }}
+    />
+  );
+}
+
+/**
+ * Form to set vault nickname
+ */
+function SetVaultNicknameForm(props: {
+  vault: ObsidianVault;
+  currentNickname: string | undefined;
+  onSet: (vaultPath: string, nickname: string) => Promise<void>;
+}) {
+  const { vault, currentNickname, onSet } = props;
+  const { pop } = useNavigation();
+
+  async function handleSubmit(values: { nickname: string }) {
+    if (values.nickname.trim()) {
+      await onSet(vault.path, values.nickname);
+    }
+    pop();
+  }
+
+  return (
+    <Form
+      navigationTitle="Set Vault Nickname"
+      actions={
+        <ActionPanel>
+          <Action.SubmitForm title="Save Nickname" onSubmit={handleSubmit} />
+        </ActionPanel>
+      }
+    >
+      <Form.TextField
+        id="nickname"
+        title="Nickname"
+        placeholder={vault.name}
+        defaultValue={currentNickname ?? ""}
+        info="Shown instead of the vault folder name in all vault lists"
+      />
+    </Form>
+  );
+}
+
+
+/**
+ * Action to set vault nickname
+ */
+export function SetVaultNicknameAction(props: {
+  vault: ObsidianVault;
+  currentNickname: string | undefined;
+  onSet: (vaultPath: string, nickname: string) => Promise<void>;
+}) {
+  const { vault, currentNickname, onSet } = props;
+  return (
+    <Action.Push
+      title="Set Nickname"
+      icon={Icon.Pencil}
+      shortcut={{ modifiers: ["cmd"], key: "r" }}
+      target={<SetVaultNicknameForm vault={vault} currentNickname={currentNickname} onSet={onSet} />}
+    />
+  );
+}
+
+/**
+ * Action to clear vault nickname
+ */
+export function ClearVaultNicknameAction(props: {
+  vault: ObsidianVault;
+  onClear: (vaultPath: string) => Promise<void>;
+}) {
+  const { vault, onClear } = props;
+  return (
+    <Action
+      title="Clear Nickname"
+      icon={Icon.XMarkCircle}
+      shortcut={{ modifiers: ["cmd"], key: "d" }}
+      onAction={() => onClear(vault.path)}
     />
   );
 }

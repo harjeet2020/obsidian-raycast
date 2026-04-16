@@ -2,11 +2,12 @@ import { Action, ActionPanel, closeMainWindow, List, open, popToRoot, Icon } fro
 
 import { NoVaultFoundMessage } from "./components/Notifications/NoVaultFoundMessage";
 import { Obsidian, ObsidianTargetType } from "@/obsidian";
-import { ShowVaultInFinderAction, CopyVaultPathAction } from "./utils/actions";
-import { useObsidianVaults } from "./utils/hooks";
+import { ShowVaultInFinderAction, CopyVaultPathAction, SetVaultNicknameAction, ClearVaultNicknameAction } from "./utils/actions";
+import { useObsidianVaults, useVaultNicknames } from "./utils/hooks";
 
 export default function Command() {
   const { ready, vaults } = useObsidianVaults();
+  const { nicknames, setNickname, clearNickname } = useVaultNicknames();
 
   if (vaults.length === 1) {
     open(Obsidian.getTarget({ type: ObsidianTargetType.OpenVault, vault: vaults[0] }));
@@ -28,7 +29,7 @@ export default function Command() {
       <List isLoading={!ready}>
         {vaults?.map((vault) => (
           <List.Item
-            title={vault.name}
+            title={nicknames[vault.path] ?? vault.name}
             subtitle={vault.path}
             key={vault.key}
             actions={
@@ -40,6 +41,8 @@ export default function Command() {
                 />
                 <ShowVaultInFinderAction vault={vault} />
                 <CopyVaultPathAction vault={vault} />
+                <SetVaultNicknameAction vault={vault} currentNickname={nicknames[vault.path]} onSet={setNickname} />
+                {nicknames[vault.path] && <ClearVaultNicknameAction vault={vault} onClear={clearNickname} />}
               </ActionPanel>
             }
           />

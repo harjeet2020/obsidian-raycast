@@ -1,4 +1,4 @@
-import { getPreferenceValues, showToast, Toast } from "@raycast/api";
+import { getPreferenceValues, LocalStorage, showToast, Toast } from "@raycast/api";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MediaState } from "./interfaces";
 import { filterContent, sortByAlphabet } from "./utils";
@@ -219,4 +219,45 @@ export function useVaultPluginCheck(params: {
 
     return resultObject;
   }, [params.vaults.map((v) => v.path).join(","), params.communityPlugins?.join(","), params.corePlugins?.join(",")]);
+}
+
+/**
+ * Sets / clears vault nickname
+ * Nicknames are stored in local storage
+ */
+
+const VAULT_NICKNAME_KEY = "vault-nicknames"; // LocalStorage key for vault nicknames
+
+export function useVaultNicknames() {
+  const [nicknames, setNicknames] = useState<Record<string, string>>({});
+
+  // If present, extract existing vault nicknames from local storage on mount
+  useEffect(() => {
+    LocalStorage.getItem<string>(VAULT_NICKNAME_KEY).then((stored) => {
+      if (stored) {
+        try {
+          setNicknames(JSON.parse(stored));
+        } catch {
+          setNicknames({});
+        }
+      }
+    })
+  }, []);
+
+  // Sets vault nickname
+  async function setNickname(vaultPath: string, nickname: string): Promise<void> {
+    const updated = { ...nicknames, [vaultPath]: nickname.trim() };
+    setNicknames(updated);
+    await LocalStorage.setItem(VAULT_NICKNAME_KEY, JSON.stringify(updated));
+  }
+
+  // Clears vault nickname
+  async function clearNickname(vaultPath: string): Promise<void> {
+    const updated = { ...nicknames }
+    delete updated[vaultPath];
+    setNicknames(updated);
+    await LocalStorage.setItem(VAULT_NICKNAME_KEY, JSON.stringify(updated));
+  }
+
+  return { nicknames, setNickname, clearNickname };
 }
