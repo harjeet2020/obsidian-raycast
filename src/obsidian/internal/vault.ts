@@ -10,10 +10,30 @@ import { Note } from "./notes";
 
 const logger: Logger = new Logger("Vaults");
 
+/**
+ * Represents an Obsidian vault discovered either from Raycast preferences or
+ * from Obsidian's own `obsidian.json` registry.
+ *
+ * @remarks
+ * The `id` field is the opaque hash key Obsidian assigns to each vault in
+ * `obsidian.json` (e.g. `"a3f9c1b2d8e4f0a1"`).  When present it should be
+ * preferred over `name` when constructing `obsidian://` URIs because it
+ * uniquely identifies the vault even when multiple vaults share the same
+ * folder name.  Vaults sourced from Raycast preferences have no Obsidian-
+ * assigned ID and will leave this field `undefined`.
+ */
 export interface ObsidianVault {
+  /** Human-readable name derived from the vault's folder basename. */
   name: string;
+  /** Stable React list key — always set to the vault's absolute file-system path. */
   key: string;
+  /** Absolute file-system path to the vault root directory. */
   path: string;
+  /**
+   * Obsidian-internal hash ID from `obsidian.json`.
+   * Only present for vaults discovered via {@link getVaultsFromObsidianJson}.
+   */
+  id?: string;
 }
 
 /** Gets a list of folders that are ignored by the user inside of Obsidian */

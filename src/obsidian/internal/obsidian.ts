@@ -47,10 +47,15 @@ export async function getVaultsFromObsidianJson(): Promise<ObsidianVault[]> {
 
   try {
     const obsidianJson = JSON.parse(await fsAsync.readFile(obsidianJsonPath, "utf8")) as ObsidianJSON;
-    return Object.values(obsidianJson.vaults).map(({ path }) => ({
+    // Use Object.entries() (not Object.values()) so we capture the vault's
+    // hash key alongside its data. That hash is the stable ID Obsidian uses
+    // internally and is what we include in obsidian:// URIs to avoid
+    // ambiguity when multiple vaults share the same folder name.
+    return Object.entries(obsidianJson.vaults).map(([id, { path }]) => ({
       name: getVaultNameFromPath(path) ?? "invalid vault name",
       key: path,
       path,
+      id,
     }));
   } catch (e) {
     return [];
@@ -119,7 +124,12 @@ export type ObsidianTarget =
 export function getObsidianTarget(target: ObsidianTarget) {
   switch (target.type) {
     case ObsidianTargetType.OpenVault: {
-      return ObsidianTargetType.OpenVault + encodeURIComponent(target.vault.name);
+      // Prefer the Obsidian-internal hash ID when available — it uniquely
+      // identifies the vault even when several vaults share the same folder
+      // name. Vaults sourced from Raycast preferences lack an ID, so we fall
+      // back to the vault name in that case.
+      const vaultIdentifier = target.vault.id ?? target.vault.name;
+      return ObsidianTargetType.OpenVault + encodeURIComponent(vaultIdentifier);
     }
     case ObsidianTargetType.OpenPath: {
       return ObsidianTargetType.OpenPath + encodeURIComponent(target.path);
