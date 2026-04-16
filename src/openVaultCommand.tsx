@@ -29,6 +29,7 @@ export default function Command() {
         {vaults?.map((vault) => (
           <List.Item
             title={vault.name}
+            subtitle={vault.path}
             key={vault.key}
             actions={
               <ActionPanel>
