@@ -30,12 +30,16 @@ Last time verified all: 2025-12-11 (macOS)
 
 ## Vault Selection
 
-Nearly every command has a vault selection that either moves to the next "action/page" directly when there is only one vault in Obsidian or shows a selection when there are multiple vaults.
+Nearly every command has a vault selection that either moves to the next "action/page" directly when there is only one vault in Obsidian or shows a selection when there are multiple vaults. Each vault displays its full file system path as a subtitle for disambiguation.
+
+Vault nicknames can be set to show a custom display name instead of the vault's folder name. Nicknames are stored in Raycast's local storage (via `useVaultNicknames` in `src/utils/hooks.ts`) and apply across all vault lists. The vault folder name is never changed — it continues to be used internally for Obsidian URIs.
 
 - [ ] actions
   - [ ] Select Vault
   - [ ] Show in Finder
   - [ ] Copy File Path (opt + shift + c)
+  - [ ] Set Nickname (cmd + r) — opens a form pre-filled with the current nickname if one exists; saving replaces it
+  - [ ] Clear Nickname (cmd + d) — only shown when a nickname is already set; restores the folder name
 
 ## Notes List
 
@@ -102,6 +106,8 @@ Many commands use a note list.
   - [ ] Open Vault
   - [ ] Show in Finder
   - [ ] Copy File Path (opt + shift + c)
+  - [ ] Set Nickname (cmd + r) — see vault selection
+  - [ ] Clear Nickname (cmd + d) — see vault selection
 
 ## Random Note Command
 

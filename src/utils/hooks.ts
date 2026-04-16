@@ -221,17 +221,23 @@ export function useVaultPluginCheck(params: {
   }, [params.vaults.map((v) => v.path).join(","), params.communityPlugins?.join(","), params.corePlugins?.join(",")]);
 }
 
+/** LocalStorage key for the vault nicknames map. */
+const VAULT_NICKNAME_KEY = "vault-nicknames";
+
 /**
- * Sets / clears vault nickname
- * Nicknames are stored in local storage
+ * Manages custom display names for vaults, persisted in Raycast LocalStorage.
+ *
+ * Nicknames are stored as a JSON map keyed by vault path. When a nickname is
+ * set, it replaces the vault folder name in all vault lists. The vault's actual
+ * folder name (used in Obsidian URIs) is never affected.
+ *
+ * @returns `nicknames` — map of vault path to nickname; `setNickname` — adds or
+ * overwrites a nickname; `clearNickname` — removes a nickname, restoring the
+ * folder name.
  */
-
-const VAULT_NICKNAME_KEY = "vault-nicknames"; // LocalStorage key for vault nicknames
-
 export function useVaultNicknames() {
   const [nicknames, setNicknames] = useState<Record<string, string>>({});
 
-  // If present, extract existing vault nicknames from local storage on mount
   useEffect(() => {
     LocalStorage.getItem<string>(VAULT_NICKNAME_KEY).then((stored) => {
       if (stored) {
@@ -241,19 +247,19 @@ export function useVaultNicknames() {
           setNicknames({});
         }
       }
-    })
+    });
   }, []);
 
-  // Sets vault nickname
+  /** Adds or overwrites the nickname for the given vault path. */
   async function setNickname(vaultPath: string, nickname: string): Promise<void> {
     const updated = { ...nicknames, [vaultPath]: nickname.trim() };
     setNicknames(updated);
     await LocalStorage.setItem(VAULT_NICKNAME_KEY, JSON.stringify(updated));
   }
 
-  // Clears vault nickname
+  /** Removes the nickname for the given vault path, restoring the folder name. */
   async function clearNickname(vaultPath: string): Promise<void> {
-    const updated = { ...nicknames }
+    const updated = { ...nicknames };
     delete updated[vaultPath];
     setNicknames(updated);
     await LocalStorage.setItem(VAULT_NICKNAME_KEY, JSON.stringify(updated));

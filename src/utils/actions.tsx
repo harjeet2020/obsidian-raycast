@@ -311,7 +311,9 @@ export function CopyVaultPathAction(props: { vault: ObsidianVault }) {
 }
 
 /**
- * Form to set vault nickname
+ * Single-field form for entering or editing a vault nickname.
+ * Pre-filled with the current nickname when one exists.
+ * Submitting an empty or whitespace-only value is a no-op.
  */
 function SetVaultNicknameForm(props: {
   vault: ObsidianVault;
@@ -350,7 +352,8 @@ function SetVaultNicknameForm(props: {
 
 
 /**
- * Action to set vault nickname
+ * Pushes {@link SetVaultNicknameForm} to set or update the display name for a vault.
+ * Shortcut: `cmd + r`.
  */
 export function SetVaultNicknameAction(props: {
   vault: ObsidianVault;
@@ -369,7 +372,8 @@ export function SetVaultNicknameAction(props: {
 }
 
 /**
- * Action to clear vault nickname
+ * Clears the nickname for a vault, restoring its folder name as the display title.
+ * Only rendered when the vault already has a nickname set. Shortcut: `cmd + d`.
  */
 export function ClearVaultNicknameAction(props: {
   vault: ObsidianVault;
